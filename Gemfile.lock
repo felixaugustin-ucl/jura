@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    csv (3.3.6)
+    webrick (1.9.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  csv
+  webrick
+
+BUNDLED WITH
+   1.17.2
