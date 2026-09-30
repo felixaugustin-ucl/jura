@@ -2,6 +2,7 @@ require "csv"
 require "fileutils"
 require "json"
 require "openssl"
+require "pg"
 require "securerandom"
 require "uri"
 require "webrick"
@@ -11,7 +12,8 @@ CSV_PATH = File.join(ROOT, "jura-trip.csv")
 STORE_PATH = File.join(ROOT, ".jura-shared.json")
 PORT = Integer(ENV.fetch("PORT", "8000"))
 MEMBERS = ["Kai", "Giulio", "Lucia", "Felix"].freeze
-STORE_LOCK = Mutex.new
+DB_LOCK = Mutex.new
+DB = PG.connect(ENV.fetch("DATABASE_URL"))
 SESSION_LOCK = Mutex.new
 SESSIONS = {}
 
@@ -69,31 +71,100 @@ def seeded_stay
   row.to_h.merge("created_by" => "Felix")
 end
 
-def read_store
-  if File.file?(STORE_PATH)
-    data = JSON.parse(File.read(STORE_PATH))
-    data["activities"] ||= seeded_activities
-    data["entries"] ||= seeded_entries
-    data["stay"] ||= seeded_stay
-    data["member_ibans"] ||= {}
-    return data
-  end
-
-  { "activities" => seeded_activities, "entries" => seeded_entries, "stay" => seeded_stay, "member_ibans" => {} }
+def default_store
+  {
+    "activities" => seeded_activities,
+    "entries" => seeded_entries,
+    "stay" => seeded_stay,
+    "member_ibans" => {}
+  }
 end
 
-def write_store(data)
-  temporary_path = "#{STORE_PATH}.tmp"
-  File.write(temporary_path, JSON.generate(data))
-  File.rename(temporary_path, STORE_PATH)
+def normalize_store(data)
+  data["activities"] ||= seeded_activities
+  data["entries"] ||= seeded_entries
+  data["stay"] ||= seeded_stay
+  data["member_ibans"] ||= {}
+  data
+end
+
+def create_database_table
+  DB.exec <<~SQL
+    CREATE TABLE IF NOT EXISTS jura_store (
+      id INTEGER PRIMARY KEY,
+      data JSONB NOT NULL
+    )
+  SQL
+end
+
+def initial_store
+  if File.file?(STORE_PATH)
+    begin
+      normalize_store(JSON.parse(File.read(STORE_PATH)))
+    rescue JSON::ParserError
+      default_store
+    end
+  else
+    default_store
+  end
+end
+
+def ensure_database_store
+  create_database_table
+
+  existing = DB.exec_params(
+    "SELECT data FROM jura_store WHERE id = $1",
+    [1]
+  )
+
+  return unless existing.ntuples.zero?
+
+  data = initial_store
+
+  DB.exec_params(
+    "INSERT INTO jura_store (id, data) VALUES ($1, $2::jsonb) ON CONFLICT (id) DO NOTHING",
+    [1, JSON.generate(data)]
+  )
 end
 
 def with_store
-  STORE_LOCK.synchronize do
-    data = read_store
-    result = yield data
-    write_store(data)
-    result
+  DB_LOCK.synchronize do
+    DB.exec("BEGIN")
+
+    begin
+      result = DB.exec_params(
+        "SELECT data FROM jura_store WHERE id = $1 FOR UPDATE",
+        [1]
+      )
+
+      data =
+        if result.ntuples.zero?
+          initial = initial_store
+
+          DB.exec_params(
+            "INSERT INTO jura_store (id, data) VALUES ($1, $2::jsonb)",
+            [1, JSON.generate(initial)]
+          )
+
+          initial
+        else
+          normalize_store(JSON.parse(result[0]["data"]))
+        end
+
+      result = yield data
+
+      DB.exec_params(
+        "UPDATE jura_store SET data = $1::jsonb WHERE id = $2",
+        [JSON.generate(data), 1]
+      )
+
+      DB.exec("COMMIT")
+
+      result
+    rescue StandardError
+      DB.exec("ROLLBACK")
+      raise
+    end
   end
 end
 
@@ -191,9 +262,7 @@ def valid_iban?(iban)
 end
 
 load_dotenv
-unless File.file?(STORE_PATH)
-  STORE_LOCK.synchronize { write_store("activities" => seeded_activities, "entries" => seeded_entries, "member_ibans" => {}) }
-end
+ensure_database_store
 
 server = WEBrick::HTTPServer.new(
   Port: PORT,
