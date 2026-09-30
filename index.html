@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2b2b2b">
+    <title>Jura / October 2026</title>
+    <link rel="stylesheet" href="styles.css?v=12">
+    <script src="app.js?v=44" defer></script>
+  </head>
+  <body>
+    <section class="auth-gate" id="auth-gate" aria-labelledby="gate-title">
+      <div class="auth-gate-content">
+        <h1 id="gate-title">Jura</h1>
+        <button class="button button-dark" id="gate-sign-in" type="button">Sign in</button>
+      </div>
+    </section>
+    <div id="trip-shell" hidden>
+    <header class="topbar">
+      <div class="topbar-main">
+        <a class="wordmark" href="?view=dashboard" aria-label="Jura trip home">Jura<span> / 26</span></a>
+        <div class="account-control" id="account-control">
+          <button class="member-avatar" id="member-avatar" type="button" aria-label="Edit your IBAN">?</button>
+          <span id="signed-in-as" hidden></span>
+          <button class="button button-quiet" id="sign-in-button" type="button">Sign in</button>
+          <button class="button button-quiet" id="sign-out-button" type="button" hidden>Sign out</button>
+        </div>
+      </div>
+      <nav class="section-nav" aria-label="Page sections">
+        <a href="?view=accounts"><span class="section-nav-icon" aria-hidden="true"><img src="wallet.jpg" alt=""></span><span>Accounts</span><span class="section-nav-arrow" aria-hidden="true"><img src="arrow-icon.png" alt=""></span></a>
+        <a href="?view=itinerary"><span class="section-nav-icon" aria-hidden="true"><img src="images.png" alt=""></span><span>Timeline</span><span class="section-nav-arrow" aria-hidden="true"><img src="arrow-icon.png" alt=""></span></a>
+        <a href="?view=stay"><span class="section-nav-icon" aria-hidden="true"><img src="home--v2.jpg" alt=""></span><span>Accommodation</span><span class="section-nav-arrow" aria-hidden="true"><img src="arrow-icon.png" alt=""></span></a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="dashboard" id="dashboard" aria-label="Trip sections" hidden>
+        <section class="landing-hero">
+          <h1>Jura <span>/ 26</span></h1>
+          <p class="landing-intro">Four days together in the Jura, organised in one shared view. In Accounts, add shared expenses as they happen and use the balances to see what remains; record direct payments when needed, but settle the final remainder at the end. In Timeline, propose activities, add restaurant or event links, and use likes and confirmations to shape the plan. Accommodation contains the house details, payment, and map. Use the links above to move between sections, or the Jura mark to return home.</p>
+        </section>
+
+      </section>
+
+      <section class="section accounts-section" id="accounts" aria-labelledby="accounts-title" hidden>
+        <a class="back-link" href="?view=dashboard"><span class="back-icon" aria-hidden="true"><img src="arrow-icon.png" alt=""></span> Home</a>
+        <div class="section-heading">
+          <div>
+            <h2 id="accounts-title">Accounts</h2>
+          </div>
+        </div>
+        <p class="section-note">A €100 shared dinner adds €25 to everyone’s share. The payer gets €75 net credit. You can add an expense to compensate or pay directly; preferably settle the remaining balance at the very end.</p>
+        <div class="people-grid" id="people-grid" aria-live="polite"></div>
+        <div class="ledger-toolbar">
+          <span id="ledger-count">0 entries</span>
+          <button class="text-button" type="button" data-open="expense">+ Add expense</button>
+        </div>
+        <div class="expense-list" id="expense-list"></div>
+      </section>
+
+      <section class="section itinerary-section" id="itinerary" aria-labelledby="itinerary-title" hidden>
+        <a class="back-link" href="?view=dashboard"><span class="back-icon" aria-hidden="true"><img src="arrow-icon.png" alt=""></span> Home</a>
+        <div class="section-heading">
+          <div>
+            <h2 id="itinerary-title">Timeline</h2>
+          </div>
+          <button class="button button-outline" type="button" data-open="activity">Propose an activity</button>
+        </div>
+        <p class="section-note">Suggest activities, like proposals, and let Felix confirm the plan.</p>
+        <div class="timeline" id="timeline" aria-live="polite"></div>
+      </section>
+
+      <section class="section stay-section" id="stay" aria-labelledby="stay-title" hidden>
+        <a class="back-link stay-back" href="?view=dashboard"><span class="back-icon" aria-hidden="true"><img src="arrow-icon.png" alt=""></span> Home</a>
+        <div class="stay-info">
+          <div class="stay-copy">
+            <h2 id="stay-title">Accommodation</h2>
+            <p class="stay-property">Au Vieux Pin</p>
+            <p class="stay-explanation">Stay details, booking links, and the shared cost.</p>
+            <p class="stay-subtitle">A bastide for 2 to 6 · hosted by Jésabel</p>
+            <p class="stay-address">8 Rue Saint-Vernier<br>39800 Buvilly, France</p>
+            <div class="stay-links">
+              <a class="directions-link" href="https://www.airbnb.com/trips/v1/1786181854827484356" target="_blank" rel="noreferrer">Reservation <span class="external-arrow" aria-hidden="true"><img src="arrow-icon.png" alt=""></span></a>
+              <a class="directions-link" href="https://maps.google.com/?q=Au+Vieux+Pin%2C+8+Rue+Saint-Vernier%2C+39800+Buvilly%2C+France" target="_blank" rel="noreferrer">Directions <span class="external-arrow" aria-hidden="true"><img src="arrow-icon.png" alt=""></span></a>
+            </div>
+          </div>
+          <div class="stay-times">
+            <div><span>Check in</span><strong>Fri, 16 Oct</strong><small>After 15:00</small></div>
+            <div><span>Check out</span><strong>Mon, 19 Oct</strong><small>Before 10:00</small></div>
+          </div>
+        </div>
+        <div class="stay-media">
+          <div class="stay-photo"><img src="24D7434E-F345-41D3-AFAB-AB0C777430D3_1_201_a.jpeg" alt="Au Vieux Pin accommodation in the Jura"></div>
+          <div class="stay-map">
+            <iframe src="https://www.google.com/maps?q=Au+Vieux+Pin%2C+8+Rue+Saint-Vernier%2C+39800+Buvilly%2C+France&amp;t=k&amp;z=15&amp;output=embed" title="Satellite map of Au Vieux Pin in Buvilly" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <span>Jura / October 2026</span>
+      </footer>
+    </main>
+
+    <dialog id="entry-dialog" class="entry-dialog">
+      <form id="entry-form" method="dialog">
+        <div class="dialog-heading">
+          <div><p class="eyebrow" id="dialog-eyebrow">New entry</p><h2 id="dialog-title">Add to the trip</h2></div>
+          <button class="close-button" type="button" id="close-dialog" aria-label="Close">×</button>
+        </div>
+        <div class="payment-recipient" id="payment-recipient" hidden>
+          <span class="eyebrow">Paying to</span>
+          <strong id="payment-recipient-name"></strong>
+          <div class="payment-iban-row"><span id="payment-recipient-iban"></span><button class="copy-iban" id="copy-payment-iban" type="button" hidden>Copy</button></div>
+          <p>Enter the amount you sent. Your balance updates when you record it.</p>
+        </div>
+        <div class="tip-actions" id="tip-actions" hidden>
+          <span>Add a tip?</span>
+          <button class="tip-button" type="button" data-tip="10">+10%</button>
+          <button class="tip-button" type="button" data-tip="20">+20%</button>
+          <button class="tip-button" type="button" data-tip="25">+25%</button>
+        </div>
+        <div class="form-fields" id="form-fields"></div>
+        <p class="form-hint" id="entry-hint">Your changes are shared with the trip.</p>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" id="cancel-dialog">Cancel</button><button class="button button-dark" id="submit-entry" type="submit">Add to trip</button></div>
+      </form>
+    </dialog>
+    <dialog id="delete-dialog" class="entry-dialog delete-dialog">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Remove from the trip</p><h2 id="delete-dialog-title">Delete this entry?</h2></div>
+        <button class="close-button" type="button" id="close-delete" aria-label="Cancel delete">×</button>
+      </div>
+      <p class="delete-message" id="delete-dialog-message"></p>
+      <div class="dialog-actions"><button class="button button-quiet" type="button" id="cancel-delete">Keep it</button><button class="button button-dark" type="button" id="confirm-delete">Delete</button></div>
+    </dialog>
+    </div>
+    <dialog id="sign-in-dialog" class="entry-dialog">
+      <form id="sign-in-form">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Trip members</p><h2>Sign in</h2></div>
+          <button class="close-button" type="button" id="close-sign-in" aria-label="Close">×</button>
+        </div>
+        <div class="form-fields">
+          <div class="field"><label for="member-name">Your name</label><select id="member-name" name="name" required><option value="">Choose a member</option><option>Kai</option><option>Giulio</option><option>Lucia</option><option>Felix</option></select></div>
+          <div id="member-iban-group" hidden>
+            <div class="field" id="member-iban-field"><label for="member-iban">IBAN</label><input id="member-iban" name="iban" type="text" autocomplete="off" autocapitalize="characters" placeholder="FR76…"></div>
+            <p class="iban-explanation">Your IBAN is saved for payments between trip members. You only need to enter it once.</p>
+          </div>
+          <div class="field" id="felix-password-field" hidden><label for="member-password">Felix password</label><input id="member-password" name="password" type="password" autocomplete="current-password"></div>
+        </div>
+        <p class="form-hint" id="sign-in-hint">Choose your name to join the trip.</p>
+        <div class="dialog-actions"><button class="button button-dark" type="submit">Continue</button></div>
+      </form>
+    </dialog>
+    <dialog id="member-dialog" class="entry-dialog">
+      <form id="member-form">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Your payment details</p><h2>Edit IBAN</h2></div>
+          <button class="close-button" type="button" id="close-member-dialog" aria-label="Close">×</button>
+        </div>
+        <div class="form-fields">
+          <div class="field"><label for="member-iban-edit">IBAN</label><input id="member-iban-edit" name="iban" type="text" autocomplete="off" autocapitalize="characters" placeholder="FR76…"></div>
+        </div>
+        <p class="form-hint" id="member-iban-hint">Your updated IBAN will be used wherever payment details are shown.</p>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" id="cancel-member-dialog">Cancel</button><button class="button button-dark" type="submit">Save changes</button></div>
+      </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

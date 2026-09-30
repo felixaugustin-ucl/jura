@@ -1,0 +1,4 @@
+type,id,date,title,details,location,host,paid_by,amount,participant,due_to,status,arrival,departure,time
+trip,trip-01,,Jura trip,October weekend with Kai Giulio Lucia and Felix,,,,,,,,,,
+stay,stay-01,,Au Vieux Pin,A bastide for 2 to 6 people,,Jésabel,Felix,909,,,paid,2026-10-16 15:00,2026-10-19 10:00,
+activity,activity-01,2026-10-17,Domaine Overnoy,Requested; awaiting confirmation,Domaine Overnoy,,,,,,pending,,,
