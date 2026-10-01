@@ -133,6 +133,7 @@ h1 { margin-bottom: 9px; font-size: clamp(38px, 5.5vw, 62px); line-height: .98; 
 .activity-title { font-size: 13px; font-weight: 650; }
 .activity-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 .activity-detail time { color: #4f4f4f; font-variant-numeric: tabular-nums; }
+.activity-detail .activity-link { display: flex; margin-top: 8px; }
 .activity-status-column { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
 .activity-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
 .activity-likes { min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding-left: 13px; border-left: 1px solid var(--line); }
@@ -372,6 +373,7 @@ h1 { margin-bottom: 9px; font-size: clamp(38px, 5.5vw, 62px); line-height: .98; 
 }
 @media (max-width: 480px) {
   .topbar-main { padding: 0 14px; }
+  #signed-in-as { display: none !important; }
   .auth-gate { padding: 20px 18px; }
   .auth-gate-content { margin-top: 11vh; }
   .section-nav { padding: 0 14px; }
