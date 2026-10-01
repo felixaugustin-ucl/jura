@@ -1,6 +1,7 @@
 const PEOPLE = ["Kai", "Giulio", "Lucia", "Felix"];
 const DATES = ["2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19"];
 const HEADERS = ["type", "id", "date", "title", "details", "location", "host", "paid_by", "amount", "participant", "due_to", "status", "arrival", "departure", "time"];
+const previewMode = new URLSearchParams(window.location.search).get("preview") === "1";
 let records = [];
 let activeKind = "";
 let currentUser = null;
@@ -242,11 +243,12 @@ function personCard(person, summary) {
     return `<div>Receive ${escapeHtml(money(transfer.cents / 100))} from ${escapeHtml(transfer.from)}</div>`;
   }).join("") : `<div>${balanceCents === 0 ? "All settled" : "No payment needed"}</div>`;
   const balanceClass = balanceCents > 0 ? "money-positive" : balanceCents < 0 ? "money-open" : "";
+  const signedBalance = balanceCents > 0 ? `+${money(balanceCents / 100)}` : balanceCents < 0 ? `−${money(Math.abs(balanceCents) / 100)}` : money(0);
   return `<article class="person">
     <div class="person-head"><span class="person-initial">${person[0]}</span><span class="person-name">${person}</span></div>
     <div class="person-stat"><span>Paid</span><strong>${escapeHtml(money(paidSum))}</strong></div>
     <div class="person-stat"><span>Share (÷ 4)</span><strong>${escapeHtml(money(fairShare))}</strong></div>
-    <div class="person-stat"><span>Remainder</span><strong class="${balanceClass}">${escapeHtml(money(Math.abs(balanceCents) / 100))} ${balanceCents > 0 ? "to receive" : balanceCents < 0 ? "to pay" : ""}</strong></div>
+    <div class="person-stat"><span>Remainder</span><strong class="${balanceClass}">${escapeHtml(signedBalance)}</strong></div>
     <div class="person-remainder">${remainder}</div>
   </article>`;
 }
@@ -291,6 +293,7 @@ function renderTimeline() {
     const content = dayActivities.length ? dayActivities.map((row) => {
       const status = row.status === "done" ? "confirmed" : "neutral";
       const isProposal = row.status !== "done";
+      const previewDisabled = previewMode ? ' disabled aria-disabled="true"' : "";
       const label = isProposal ? "Proposal · awaiting confirmation" : "Confirmed";
       const time = row.time ? `<time datetime="${escapeHtml(`${row.date}T${row.time}`)}">${escapeHtml(row.time)}</time>` : "";
       const url = activityUrl(row.url);
@@ -300,11 +303,11 @@ function renderTimeline() {
       const liked = currentUser && (row.likes || []).includes(currentUser.name);
       const likerNames = row.likes || [];
       const isAdmin = currentUser?.role === "admin" && currentUser?.name === "Felix";
-      const likeButton = !isAdmin || isProposal ? `<button class="activity-like" type="button" data-like-activity="${escapeHtml(row.id)}" aria-pressed="${Boolean(liked)}">${liked ? "Liked" : "Like"}</button>` : "";
-      const confirmButton = isProposal && isAdmin ? `<button class="activity-confirm" type="button" data-confirm-activity="${escapeHtml(row.id)}">Confirm</button>` : "";
+      const likeButton = !isAdmin || isProposal ? `<button class="activity-like" type="button" data-like-activity="${escapeHtml(row.id)}" aria-pressed="${Boolean(liked)}"${previewDisabled}>${liked ? "Liked" : "Like"}</button>` : "";
+      const confirmButton = isProposal && isAdmin ? `<button class="activity-confirm" type="button" data-confirm-activity="${escapeHtml(row.id)}"${previewDisabled}>Confirm</button>` : "";
       const canManage = currentUser && (isAdmin || row.created_by === currentUser.name);
-      const editDelete = canManage ? `<button class="activity-action" type="button" data-edit-activity="${escapeHtml(row.id)}">Edit</button><button class="activity-action" type="button" data-delete-activity="${escapeHtml(row.id)}">Delete</button>` : "";
-      const undoConfirm = row.status === "done" && isAdmin ? `<button class="activity-action" type="button" data-unconfirm-activity="${escapeHtml(row.id)}">Undo confirmation</button>` : "";
+      const editDelete = canManage ? `<button class="activity-action" type="button" data-edit-activity="${escapeHtml(row.id)}"${previewDisabled}>Edit</button><button class="activity-action" type="button" data-delete-activity="${escapeHtml(row.id)}"${previewDisabled}>Delete</button>` : "";
+      const undoConfirm = row.status === "done" && isAdmin ? `<button class="activity-action" type="button" data-unconfirm-activity="${escapeHtml(row.id)}"${previewDisabled}>Undo confirmation</button>` : "";
       const likerIcons = likerNames.map(memberIcon).join("");
       const likerLabel = likerNames.length ? `Liked by ${likerNames.join(", ")}` : "No likes yet";
       return `<div class="activity"><div class="activity-main"><span class="activity-title">${escapeHtml(row.title)}</span><span class="activity-detail">${activityDetail}</span></div><div class="activity-status-column"><span class="status-label status-${status} activity-status">${label}</span><div class="activity-actions">${confirmButton}${undoConfirm}${editDelete}</div></div><div class="activity-likes" aria-label="${escapeHtml(likerLabel)}"><div class="like-avatars">${likerIcons}</div>${likeButton}</div></div>`;
@@ -328,6 +331,13 @@ function setView() {
   const activeView = validViews.includes(requestedView) ? requestedView : "dashboard";
   const viewTitles = { dashboard: "Jura", accounts: "Accounts", itinerary: "Timeline", stay: "Accommodation" };
   validViews.forEach((name) => { $(`#${name}`).hidden = name !== activeView; });
+  if (previewMode) {
+    document.querySelectorAll('a[href^="?view="]').forEach((link) => {
+      const target = new URL(link.href, window.location.href);
+      target.searchParams.set("preview", "1");
+      link.href = `${target.pathname}${target.search}${target.hash}`;
+    });
+  }
   document.body.classList.toggle("dashboard-view", activeView === "dashboard");
   document.title = `${viewTitles[activeView]} / October 2026`;
 }
@@ -640,6 +650,23 @@ $("#sign-out-button").addEventListener("click", async () => {
 });
 setView();
 initLandingMotion();
+if (previewMode) {
+  document.body.classList.add("preview-mode");
+  const notice = document.createElement("div");
+  notice.className = "preview-notice";
+  notice.textContent = "Read-only preview · changes are not saved";
+  document.body.prepend(notice);
+  currentUser = { name: "Felix", role: "admin" };
+  records = [
+    { type: "stay", id: "stay-preview", title: "Au Vieux Pin", details: "A bastide for 2 to 6 people", paid_by: "Felix", amount: "909", status: "paid", created_by: "Felix" },
+    { type: "activity", id: "activity-preview", date: "2026-10-17", time: "10:30", title: "Domaine Overnoy", details: "Requested; awaiting confirmation", location: "Domaine Overnoy", status: "pending", created_by: "Felix", likes: ["Kai", "Giulio"] },
+    { type: "activity", id: "activity-preview-lunch", date: "2026-10-17", time: "12:30", title: "Lunch in Arbois", details: "A relaxed stop between vineyard visits.", location: "Arbois", status: "pending", created_by: "Giulio", likes: ["Lucia"] },
+    { type: "activity", id: "activity-preview-walk", date: "2026-10-18", time: "10:00", title: "Explore Château-Chalon", details: "A village walk with views across the vineyards.", location: "Château-Chalon", status: "done", created_by: "Lucia", likes: ["Kai", "Giulio", "Felix"] }
+  ];
+  tripDataLoaded = true;
+  updateAccountControl();
+  render();
+} else {
 apiRequest("/api/session").then(async ({ user, registered_members: registeredMembersFromServer }) => {
   registeredMembers = registeredMembersFromServer || [];
   currentUser = user;
@@ -652,7 +679,8 @@ apiRequest("/api/session").then(async ({ user, registered_members: registeredMem
   showToast("Shared trip server is unavailable");
 });
 window.setInterval(() => {
-  if (!currentUser) return;
+  if (!currentUser || previewMode) return;
   refreshActivities().catch(() => {});
   refreshEntries().catch(() => {});
 }, 5000);
+}
